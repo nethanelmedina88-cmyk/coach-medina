@@ -10,5 +10,6 @@ window.FIREBASE_CONFIG = {
   projectId: "coach-medina",
   storageBucket: "coach-medina.firebasestorage.app",
   messagingSenderId: "1074980627565",
-  appId: "1:1074980627565:web:f8e5ce4c2761db9e35cb64"
+  appId: "1:1074980627565:web:f8e5ce4c2761db9e35cb64",
+  measurementId: "G-1SWZ5V6CS6"
 };

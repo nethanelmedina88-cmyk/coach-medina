@@ -6,6 +6,13 @@
 <meta name="theme-color" content="#13161b">
 <meta name="description" content="Coach Medina · פלטפורמת ליווי אישי — אימונים, תזונה, מעקב והתקדמות">
 <title>Coach Medina · פלטפורמת אימון אישי</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Coach Medina">
 <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -220,6 +227,7 @@ svg.chart{width:100%;height:190px;display:block}
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-analytics-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script>
 'use strict';
@@ -266,7 +274,7 @@ function normalize(c){
 }
 
 /* =============== Firebase layer (Auth + Firestore, localStorage fallback) =============== */
-var FB={on:false,db:null,auth:null,unsub:null};
+var FB={on:false,db:null,auth:null,unsub:null,analytics:null};
 function fbConfigured(){
   var c=window.FIREBASE_CONFIG;
   return !!(c && c.apiKey && c.apiKey.indexOf("PASTE")!==0 && typeof firebase!=="undefined");
@@ -277,11 +285,15 @@ function fbInit(){
     firebase.initializeApp(window.FIREBASE_CONFIG);
     FB.auth=firebase.auth();
     FB.db=firebase.firestore();
+    /* Google Analytics — activates only when a measurementId is present in the config */
+    try{ if(window.FIREBASE_CONFIG.measurementId && firebase.analytics){ FB.analytics=firebase.analytics(); } }catch(e){}
     try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(function(){}); }catch(e){}
     return FB.auth.signInAnonymously().then(function(){ FB.on=true; return true; })
       .catch(function(){ toast("החיבור לענן נכשל, עובד במצב מקומי"); return false; });
   }catch(e){ return Promise.resolve(false); }
 }
+/* Google Analytics event helper — safe no-op until analytics is active */
+function track(evt,params){ try{ if(FB.analytics) FB.analytics.logEvent(evt,params||{}); }catch(e){} }
 /* realtime sync: every change any device writes lands here */
 function startSync(){
   return new Promise(function(resolve){
@@ -357,7 +369,7 @@ function syncBadge(){
 
 /* =============== session (device-local) =============== */
 function saveSession(){ try{ localStorage.setItem(SESKEY,JSON.stringify({role:role,myId:myId})); }catch(e){} }
-function logout(){ role=null; myId=null; view="dash"; cid=null; try{ localStorage.removeItem(SESKEY); }catch(e){} animNext=true; render(); }
+function logout(){ track("logout",{role:role||"unknown"}); role=null; myId=null; view="dash"; cid=null; try{ localStorage.removeItem(SESKEY); }catch(e){} animNext=true; render(); }
 
 /* =============== boot =============== */
 function boot(){
@@ -430,16 +442,16 @@ function showLogin(r){
 function tryCoach(){
   var p=gv("pinIn");
   getPin().then(function(pin){
-    if(p && p===pin){ role="coach"; view="dash"; saveSession(); animNext=true; render(); }
-    else{ var e=document.getElementById("lerr"); if(e) e.textContent="קוד שגוי, נסה שוב"; }
+    if(p && p===pin){ role="coach"; view="dash"; saveSession(); track("login",{method:"pin",role:"coach"}); animNext=true; render(); }
+    else{ track("login_failed",{role:"coach"}); var e=document.getElementById("lerr"); if(e) e.textContent="קוד שגוי, נסה שוב"; }
   });
 }
 function tryClient(){
   var code=gv("codeIn").toUpperCase();
   var found=null;
   for(var i=0;i<db.clients.length;i++) if(db.clients[i].code===code) found=db.clients[i];
-  if(found){ role="client"; myId=found.id; view="chome"; saveSession(); animNext=true; render(); }
-  else{ var e=document.getElementById("lerr"); if(e) e.textContent="קוד לא נמצא, בדוק מול המאמן"; }
+  if(found){ role="client"; myId=found.id; view="chome"; saveSession(); track("login",{method:"code",role:"client"}); animNext=true; render(); }
+  else{ track("login_failed",{role:"client"}); var e=document.getElementById("lerr"); if(e) e.textContent="קוד לא נמצא, בדוק מול המאמן"; }
 }
 
 /* =============== render root =============== */
@@ -451,7 +463,7 @@ function render(){
   if(!role){ root.innerHTML=rLogin(); return; }
   root.innerHTML = role==="coach"? rCoachShell() : rClientShell();
 }
-function go(v,id,t){ view=v; if(id!==undefined) cid=id; if(t) tab=t; if(v==="client"&&!t) tab="overview"; animNext=true; render(); window.scrollTo(0,0); }
+function go(v,id,t){ view=v; if(id!==undefined) cid=id; if(t) tab=t; if(v==="client"&&!t) tab="overview"; track("screen_view",{screen_name:(t||v),role:role||"guest"}); animNext=true; render(); window.scrollTo(0,0); }
 
 /* ################ COACH ################ */
 function rCoachShell(){
@@ -848,8 +860,16 @@ function saveProfile(){
 }
 
 window.addEventListener("error",function(){});
-(function(){ var l=document.createElement("link"); l.rel="icon"; l.href=LOGO; document.head.appendChild(l); })();
 boot();
+/* PWA service worker — installable + offline; self-updates on each deploy */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",function(){
+    navigator.serviceWorker.register("sw.js").then(function(reg){
+      reg.update();
+      if(reg.waiting) reg.waiting.postMessage("SKIP_WAITING");
+    }).catch(function(){});
+  });
+}
 </script>
 </body>
 </html>
