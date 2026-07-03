@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "io.github.nethanelmedina88_cmyk.twa",
       "sha256_cert_fingerprints": [
-        "FC:4D:1B:7E:2D:72:B5:9A:97:37:E0:4C:5A:96:74:F4:B3:B0:83:09:4F:B4:8B:7B:A2:0B:B3:30:26:73:99:98"
+        "FC:4D:1B:7E:2D:72:B5:9A:97:37:E0:4C:5A:96:74:F4:B3:B0:83:09:4F:B4:8B:7B:A2:0B:B3:30:26:73:99:98",
+        "16:E3:93:58:18:45:FB:B2:0C:84:23:48:1B:C9:2B:12:8A:B9:6E:23:C5:18:BC:EE:BA:4A:1D:E6:28:C1:47:05"
       ]
     }
   }
