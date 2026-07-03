@@ -1,16 +1,14 @@
 /* =====================================================================
-   Coach Medina · הגדרות Firebase
+   Coach Medina · הגדרות Firebase — פרויקט coach-medina (מחובר ✓)
    ---------------------------------------------------------------------
-   1. היכנס אל https://console.firebase.google.com ופתח פרויקט חדש
-   2. הוסף אפליקציית Web (אייקון </>) והעתק את ה-firebaseConfig שקיבלת
-   3. הדבק את הערכים כאן במקום שורות ה-PASTE
-   כל עוד הערכים לא הוחלפו — האפליקציה עובדת במצב מקומי (localStorage)
+   ערכי ה-config של Firebase Web מיועדים להיטמע בצד-לקוח.
+   האבטחה נאכפת ע"י כללי Firestore (firestore.rules) + Auth — לא ע"י ה-apiKey.
    ===================================================================== */
 window.FIREBASE_CONFIG = {
-  apiKey: "PASTE_API_KEY",
-  authDomain: "PASTE_PROJECT_ID.firebaseapp.com",
-  projectId: "PASTE_PROJECT_ID",
-  storageBucket: "PASTE_PROJECT_ID.appspot.com",
-  messagingSenderId: "PASTE_SENDER_ID",
-  appId: "PASTE_APP_ID"
+  apiKey: "AIzaSyD7y9UwkaP1Z8H2kfvXgR6jKGmGxt1fHAw",
+  authDomain: "coach-medina.firebaseapp.com",
+  projectId: "coach-medina",
+  storageBucket: "coach-medina.firebasestorage.app",
+  messagingSenderId: "1074980627565",
+  appId: "1:1074980627565:web:f8e5ce4c2761db9e35cb64"
 };
