@@ -3,9 +3,9 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.coachmedina.twa",
+      "package_name": "io.github.nethanelmedina88_cmyk.twa",
       "sha256_cert_fingerprints": [
-        "REPLACE_WITH_SHA256_FINGERPRINT_FROM_PLAY_APP_SIGNING"
+        "FC:4D:1B:7E:2D:72:B5:9A:97:37:E0:4C:5A:96:74:F4:B3:B0:83:09:4F:B4:8B:7B:A2:0B:B3:30:26:73:99:98"
       ]
     }
   }
